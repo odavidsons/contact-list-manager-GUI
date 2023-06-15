@@ -1,0 +1,32 @@
+[
+    {
+        "name": "david",
+        "phone_number": "935494079",
+        "email": "davidsantos2807@gmail.com",
+        "address": "street"
+    },
+    {
+        "name": "John",
+        "phone_number": "111111119",
+        "email": "John21@gmail.com",
+        "address": "street"
+    },
+    {
+        "name": "Mark",
+        "phone_number": "999999999",
+        "email": "Mark12@gmail.com",
+        "address": "street"
+    },
+    {
+        "name": "Kennedy",
+        "phone_number": "444444444",
+        "email": "Kennedy50@gmail.com",
+        "address": "street"
+    },
+    {
+        "name": "Marie",
+        "phone_number": "333333333",
+        "email": "Marie79@gmail.com",
+        "address": "street"
+    }
+]
