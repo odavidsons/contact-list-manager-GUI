@@ -9,10 +9,14 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import messagebox as msg
 import json
+import dbconnection #File containing database class/functions
 
 class App(tk.Frame):
 
     contactsDataJSON = [] #Contact data is stored in a temporary list while the app is running, which is then used to export
+    contactsDataDB = [] #Contact data imported from a database connection
+    db = "" #database connection variable
+    databaseStatus = False
 
     def __init__(self,master=None):
         tk.Frame.__init__(self,master)
@@ -23,12 +27,14 @@ class App(tk.Frame):
     def importContactsJSON(self):
         filetypes = (('JSON files', '*.json'),('All files', '*.*'))
         filename = fd.askopenfilename(title='Open a file',initialdir='/home/dsantos/Documentos/VsCode/Python',filetypes=filetypes)
-        file = open(filename)
-        data = json.load(file)
-        for contact in data:
-            contactList.insert(tk.END,contact["name"])
-            self.contactsDataJSON.append(contact)
-        print(self.contactsDataJSON)
+        try:
+            file = open(filename)
+            data = json.load(file)
+            for contact in data:
+                contactList.insert(tk.END,contact["name"])
+                self.contactsDataJSON.append(contact)
+        except: pass
+
     #Export the current dictionary as a JSON file
     def exportContactsJSON(self):
         try:
@@ -42,7 +48,7 @@ class App(tk.Frame):
             else: msg.showerror(title="Failed",message="You have no data to export!")
         except: msg.showerror(title="Error",message="There was an error while exporting your contacts")
 
-    #Create a form window
+    #Create a window with a contact form
     def addContactWindow(self):
         window = tk.Toplevel(self)
         window.title("Add a contact")
@@ -68,14 +74,22 @@ class App(tk.Frame):
         addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(window,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
         addBtn.grid(columnspan=2)
 
-    #Execute the operation for adding a new contact
+    #Execute the operations for adding a new contact
     def addContact(self,window,name,phone,email,address):
         if name != "":
-            self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address})
-            contactList.insert(tk.END,name)
+            #If database connection is set
+            if self.databaseStatus == True:
+                self.db.insertContact(name,phone,email,address)
+                self.contactsDataDB.append({"name": name, "phone_number": phone, "email": email, "address": address})
+                contactList.insert(tk.END,name)
+            else:
+                #Add a local data entry
+                self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address})
+                contactList.insert(tk.END,name)
             window.destroy()
         else: msg.showwarning(title="Missing field",message="Please enter at least the contact name")
 
+    #Create a window with the contact details
     def viewContact(self):
         try:
             selected = contactList.get(contactList.curselection())
@@ -111,6 +125,7 @@ class App(tk.Frame):
             addBtn.grid(columnspan=2)
         except: pass
             
+    #Create a window with the contact edit form
     def editContactWindow(self):
         try:
             selected = contactList.get(contactList.curselection())
@@ -149,6 +164,8 @@ class App(tk.Frame):
             addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
             addBtn.grid(columnspan=2)
         except: pass
+
+    #Execute the operations for editing a contact
     def editContact(self,window,old_name,name,phone,email,address):
         try:
             for contact in self.contactsDataJSON:
@@ -161,21 +178,94 @@ class App(tk.Frame):
             window.destroy()
         except: msg.showerror(title="Failed",message="There was en error updating your contact.")
 
+    #Execute the operations for removing a contact
     def removeContact(self):
-        selected_index = contactList.curselection()
-        selected = contactList.get(contactList.curselection())
-        confirm = msg.askyesno(title="Remove contact",message="Do you want to remove this contact? ("+selected+")")
-        if confirm == True:
-            for contact in self.contactsDataJSON:
-                if contact["name"] == selected:
-                    self.contactsDataJSON.pop(self.contactsDataJSON.index(contact))
-            contactList.delete(selected_index,selected_index)
+        try: 
+            selected_index = contactList.curselection()
+            selected = contactList.get(contactList.curselection())
+            confirm = msg.askyesno(title="Remove contact",message="Do you want to remove this contact? ("+selected+")")
+            if confirm == True:
+                #If database connection is set
+                if self.databaseStatus == True:
+                    self.db.removeContact(selected)
+                    for contact in self.contactsDataDB:
+                        if contact["name"] == selected:
+                            self.contactsDataDB.pop(self.contactsDataDB.index(contact))
+                    contactList.delete(selected_index,selected_index)
+                    print(self.contactsDataDB)
+                else:
+                    #Delete the local data entries
+                    for contact in self.contactsDataJSON:
+                        if contact["name"] == selected:
+                            self.contactsDataJSON.pop(self.contactsDataJSON.index(contact))
+                    contactList.delete(selected_index,selected_index)
+        except: pass
 
-#Run application
+    #Create a Window for inputing the database details
+    def connectDBWindow(self):
+        window = tk.Toplevel(self)
+        window.title("Database details")
+        window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
+        body = tk.Frame(window,padx=20,pady=20)
+        body.grid()
+        DBhost = tk.Label(body,text="Host:",pady=5)
+        DBhost.grid(row=0,column=0)
+        inputDBhost = tk.Entry(body)
+        inputDBhost.grid(row=0,column=1)
+        DBuser = tk.Label(body,text="User:",pady=5)
+        DBuser.grid(row=1,column=0)
+        inputDBuser = tk.Entry(body)
+        inputDBuser.grid(row=1,column=1)
+        DBpassword = tk.Label(body,text="Password:",pady=5)
+        DBpassword.grid(row=2,column=0)
+        inputDBpassword = tk.Entry(body)
+        inputDBpassword.grid(row=2,column=1)
+        DBname = tk.Label(body,text="Database name:",pady=5)
+        DBname.grid(row=3,column=0)
+        inputDBname = tk.Entry(body)
+        inputDBname.grid(row=3,column=1)
+        addBtn = tk.Button(body,text="OK",command=lambda: [self.connectDB(window,inputDBhost.get(),inputDBuser.get(),inputDBpassword.get(),inputDBname.get())])
+        addBtn.grid(columnspan=2)
+
+    """ *---------------------------------------------------------------*
+        |                Functions for database handling                |
+        *---------------------------------------------------------------* """
+
+    #Call dbconnection constructor and set variables
+    def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
+        try:
+            self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
+            self.databaseStatus = True
+            self.setDatabaseStatus()
+            msg.showinfo(title="Connected",message="Connected to database")
+            window.destroy()
+            self.importContactsDB()
+        except: msg.showerror(title="Connection failed",message="There was an error connecting to the database")
+
+    #Set the displayed stats of the database connection
+    def setDatabaseStatus(self):
+        if self.databaseStatus == True:
+            statusLabel.config(text="Database Connected")
+        else: statusLabel.config(text="Database Disconnected")
+
+    def importContactsDB(self):
+        self.contactsDataDB = self.db.getContacts()
+        contactList.delete(0,tk.END)
+        for contact in self.contactsDataDB:
+            contactList.insert(tk.END,contact["name"])
+
+#---------------------------- Run application ----------------------------
 app = App()
 menubar = tk.Menu(app)
-menubar.add_command(label="Import",command=app.importContactsJSON)
-menubar.add_command(label="Export",command=app.exportContactsJSON)
+menubar = tk.Menu(app)
+contactsMenu = tk.Menu(menubar, tearoff=0)
+contactsMenu.add_command(label="Import contacts",command=app.importContactsJSON)
+contactsMenu.add_command(label="Export contacts",command=app.exportContactsJSON)
+databaseMenu = tk.Menu(menubar, tearoff=0)
+databaseMenu.add_command(label="Connect",command=app.connectDBWindow)
+databaseMenu.add_command(label="Disconnect",command=app)
+menubar.add_cascade(label="Contacts", menu=contactsMenu)
+menubar.add_cascade(label="Database", menu=databaseMenu)
 menubar.add_command(label="Exit", command=app.quit)
 
 app.master.config(menu=menubar)
@@ -201,5 +291,10 @@ scrollbar_y = tk.Scrollbar(contactsFrame)
 scrollbar_y.pack(side="left", fill="y")
 contactList.config(yscrollcommand=scrollbar_y.set)
 scrollbar_y.config(command = contactList.yview)
+
+statusFrame = tk.Frame(app)
+statusFrame.pack(fill="x")
+statusLabel = tk.Label(statusFrame,text="Database Disconnected",fg="white",bg="#2b7287")
+statusLabel.pack(fill="x")
 
 app.mainloop()
