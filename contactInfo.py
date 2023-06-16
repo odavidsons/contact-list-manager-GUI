@@ -25,10 +25,10 @@ class App(tk.Frame):
         filename = fd.askopenfilename(title='Open a file',initialdir='/home/dsantos/Documentos/VsCode/Python',filetypes=filetypes)
         file = open(filename)
         data = json.load(file)
-        self.contactsDataJSON = data
-        for contact in self.contactsDataJSON:
+        for contact in data:
             contactList.insert(tk.END,contact["name"])
-
+            self.contactsDataJSON.append(contact)
+        print(self.contactsDataJSON)
     #Export the current dictionary as a JSON file
     def exportContactsJSON(self):
         try:
