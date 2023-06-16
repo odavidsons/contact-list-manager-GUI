@@ -1,32 +1,38 @@
 [
     {
-        "name": "david",
-        "phone_number": "231232121",
-        "email": "david28@gmail.com",
-        "address": "street"
+        "name": "David",
+        "phone_number": "777777777",
+        "email": "david28@test.mail",
+        "address": "street1"
     },
     {
         "name": "John",
-        "phone_number": "111111119",
-        "email": "John21@gmail.com",
-        "address": "street"
+        "phone_number": "111111111",
+        "email": "John21@test.mail",
+        "address": "street2"
     },
     {
         "name": "Mark",
         "phone_number": "999999999",
-        "email": "Mark12@gmail.com",
-        "address": "street"
+        "email": "Mark12@test.mail",
+        "address": "street3"
     },
     {
         "name": "Kennedy",
         "phone_number": "444444444",
-        "email": "Kennedy50@gmail.com",
-        "address": "street"
+        "email": "Kennedy50@test.mail",
+        "address": "street4"
     },
     {
         "name": "Marie",
         "phone_number": "333333333",
-        "email": "Marie79@gmail.com",
-        "address": "street"
+        "email": "Marie79@test.mail",
+        "address": "street5"
+    },
+    {
+        "name": "Sarah",
+        "phone_number": "555555555",
+        "email": "Sarah91@test.mail",
+        "address": "street6"
     }
 ]

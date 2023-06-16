@@ -1,3 +1,10 @@
+"""
+Basic python app for managing a list of contacs.
+Allows the user to add new, edit and remove contacts, as well as import or export the list as a JSON file.
+
+Made by David Santos - https://github.com/odavidsons/contactListManager-GUI
+"""
+
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import messagebox as msg
@@ -9,7 +16,7 @@ class App(tk.Frame):
 
     def __init__(self,master=None):
         tk.Frame.__init__(self,master)
-        self.config(width=200,height=400)
+        self.config(width=300,height=400)
         self.pack()
 
     #Select and import a JSON file
@@ -57,44 +64,136 @@ class App(tk.Frame):
         address.grid(row=3,column=0)
         inputAddress = tk.Entry(body)
         inputAddress.grid(row=3,column=1)
-        addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get()),window.destroy()])
+        addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(window,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
         addBtn.grid(columnspan=2)
 
     #Execute the operation for adding a new contact
-    def addContact(self,name,phone,email,address):
-        self.contactsDataJSON.append({"name": name, "phone": phone, "email": email, "address": address})
-        contactList.insert(tk.END,name)
+    def addContact(self,window,name,phone,email,address):
+        if name != "":
+            self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address})
+            contactList.insert(tk.END,name)
+            window.destroy()
+        else: msg.showwarning(title="Missing field",message="Please enter at least the contact name")
 
     def viewContact(self):
-        print(contactList.curselection())
+        try:
+            selected = contactList.get(contactList.curselection())
+            for contact in self.contactsDataJSON:
+                if contact["name"] == selected:
+                    view_name = contact["name"]
+                    view_phone = contact["phone_number"]
+                    view_email = contact["email"]
+                    view_address = contact["address"]
+            #Open view window
+            window = tk.Toplevel(self)
+            window.title("View contact")
+            body = tk.Frame(window,padx=20,pady=20)
+            body.grid()
+            name = tk.Label(body,text="Name:",pady=5)
+            name.grid(row=0,column=0)
+            inputName = tk.Label(body,text=view_name)
+            inputName.grid(row=0,column=1)
+            phone = tk.Label(body,text="Phone number:",pady=5)
+            phone.grid(row=1,column=0)
+            inputPhone = tk.Label(body,text=view_phone)
+            inputPhone.grid(row=1,column=1)
+            email = tk.Label(body,text="Email:",pady=5)
+            email.grid(row=2,column=0)
+            inputEmail = tk.Label(body,text=view_email)
+            inputEmail.grid(row=2,column=1)
+            address = tk.Label(body,text="Address:",pady=5)
+            address.grid(row=3,column=0)
+            inputAddress = tk.Label(body,text=view_address)
+            inputAddress.grid(row=3,column=1)
+            addBtn = tk.Button(body,text="Close",command=window.destroy)
+            addBtn.grid(columnspan=2)
+        except: pass
+            
+    def editContactWindow(self):
+        try:
+            selected = contactList.get(contactList.curselection())
+            for contact in self.contactsDataJSON:
+                if contact["name"] == selected:
+                    edit_name = contact["name"]
+                    edit_phone = contact["phone_number"]
+                    edit_email = contact["email"]
+                    edit_address = contact["address"]
+            #Open edit window
+            window = tk.Toplevel(self)
+            window.title("Edit contact")
+            body = tk.Frame(window,padx=20,pady=20)
+            body.grid()
+            name = tk.Label(body,text="Name:",pady=5)
+            name.grid(row=0,column=0)
+            inputName = tk.Entry(body,text=edit_name)
+            inputName.grid(row=0,column=1)
+            inputName.insert(tk.END,edit_name)
+            phone = tk.Label(body,text="Phone number:",pady=5)
+            phone.grid(row=1,column=0)
+            inputPhone = tk.Entry(body,text=edit_phone)
+            inputPhone.grid(row=1,column=1)
+            inputPhone.insert(tk.END,edit_phone)
+            email = tk.Label(body,text="Email:",pady=5)
+            email.grid(row=2,column=0)
+            inputEmail = tk.Entry(body,text=edit_email)
+            inputEmail.grid(row=2,column=1)
+            inputEmail.insert(tk.END,edit_email)
+            address = tk.Label(body,text="Address:",pady=5)
+            address.grid(row=3,column=0)
+            inputAddress = tk.Entry(body,text=edit_address)
+            inputAddress.grid(row=3,column=1)
+            inputAddress.insert(tk.END,edit_address)
+            addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
+            addBtn.grid(columnspan=2)
+        except: pass
+    def editContact(self,window,old_name,name,phone,email,address):
+        try:
+            for contact in self.contactsDataJSON:
+                if contact["name"] == old_name:
+                    contact["name"] = name
+                    contact["phone_number"] = phone
+                    contact["email"] = email
+                    contact["address"] = address
+            msg.showinfo(title="Success",message="Contact updated")
+            window.destroy()
+        except: msg.showerror(title="Failed",message="There was en error updating your contact.")
+
+    def removeContact(self):
+        selected_index = contactList.curselection()
+        selected = contactList.get(contactList.curselection())
+        confirm = msg.askyesno(title="Remove contact",message="Do you want to remove this contact? ("+selected+")")
+        if confirm == True:
+            for contact in self.contactsDataJSON:
+                if contact["name"] == selected:
+                    self.contactsDataJSON.pop(self.contactsDataJSON.index(contact))
+            contactList.delete(selected_index,selected_index)
 
 #Run application
 app = App()
 menubar = tk.Menu(app)
-filemenu = tk.Menu(menubar, tearoff=0)
-filemenu.add_command(label="Import contacts",command=app.importContactsJSON)
-filemenu.add_command(label="Export contacts",command=app.exportContactsJSON)
-menubar.add_cascade(label="File", menu=filemenu)
+menubar.add_command(label="Import",command=app.importContactsJSON)
+menubar.add_command(label="Export",command=app.exportContactsJSON)
 menubar.add_command(label="Exit", command=app.quit)
 
 app.master.config(menu=menubar)
 app.master.title("Contact Manager")
-titleLabel = tk.Label(app,text="Welcome",font=("default bold",20),padx=10,pady=10)
-titleLabel.pack()
-optionsFrame = tk.Frame(app,padx=20,pady=10)
-optionsFrame.pack(fill="x")
+app.master.resizable(True, True)
+optionsFrame = tk.Frame(app,padx=20,pady=10,bg="#2b7287")
+optionsFrame.pack()
 
-viewBtn = tk.Button(optionsFrame,text="View",command=app.viewContact)
+viewBtn = tk.Button(optionsFrame,text="View",bg="teal",fg="white",highlightthickness=0,command=app.viewContact)
 viewBtn.pack(side="left",padx=5)
-addBtn = tk.Button(optionsFrame,text="Add",command=app.addContactWindow)
+addBtn = tk.Button(optionsFrame,text="Add",bg="teal",fg="white",highlightthickness=0,command=app.addContactWindow)
 addBtn.pack(side="left",padx=5)
-removeBtn = tk.Button(optionsFrame,text="Remove")
+editBtn = tk.Button(optionsFrame,text="Edit",bg="teal",fg="white",highlightthickness=0,command=app.editContactWindow)
+editBtn.pack(side="left",padx=5)
+removeBtn = tk.Button(optionsFrame,text="Remove",bg="teal",fg="white",highlightthickness=0,command=app.removeContact)
 removeBtn.pack(side="left",padx=5)
 
-contactsFrame = tk.Frame(app,padx=20,pady=10)
+contactsFrame = tk.Frame(app,pady=10,bg="#b0b0b0")
 contactsFrame.pack(fill="x")
 contactList = tk.Listbox(contactsFrame)
-contactList.pack(side="left",fill="x")
+contactList.pack(side="left",padx=10)
 scrollbar_y = tk.Scrollbar(contactsFrame)
 scrollbar_y.pack(side="left", fill="y")
 contactList.config(yscrollcommand=scrollbar_y.set)
