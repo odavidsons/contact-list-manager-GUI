@@ -12,7 +12,7 @@ import json
 
 class App(tk.Frame):
 
-    contactsDataJSON = [] #Imported or added Contacts are stored in a list
+    contactsDataJSON = [] #Contact data is stored in a temporary list while the app is running, which is then used to export
 
     def __init__(self,master=None):
         tk.Frame.__init__(self,master)
@@ -25,10 +25,10 @@ class App(tk.Frame):
         filename = fd.askopenfilename(title='Open a file',initialdir='/home/dsantos/Documentos/VsCode/Python',filetypes=filetypes)
         file = open(filename)
         data = json.load(file)
-        self.contactsDataJSON = data
-        for contact in self.contactsDataJSON:
+        for contact in data:
             contactList.insert(tk.END,contact["name"])
-
+            self.contactsDataJSON.append(contact)
+        print(self.contactsDataJSON)
     #Export the current dictionary as a JSON file
     def exportContactsJSON(self):
         try:
@@ -46,6 +46,7 @@ class App(tk.Frame):
     def addContactWindow(self):
         window = tk.Toplevel(self)
         window.title("Add a contact")
+        window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
         body = tk.Frame(window,padx=20,pady=20)
         body.grid()
         name = tk.Label(body,text="Name:",pady=5)
@@ -87,6 +88,7 @@ class App(tk.Frame):
             #Open view window
             window = tk.Toplevel(self)
             window.title("View contact")
+            window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
             body = tk.Frame(window,padx=20,pady=20)
             body.grid()
             name = tk.Label(body,text="Name:",pady=5)
@@ -121,6 +123,7 @@ class App(tk.Frame):
             #Open edit window
             window = tk.Toplevel(self)
             window.title("Edit contact")
+            window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
             body = tk.Frame(window,padx=20,pady=20)
             body.grid()
             name = tk.Label(body,text="Name:",pady=5)
@@ -192,7 +195,7 @@ removeBtn.pack(side="left",padx=5)
 
 contactsFrame = tk.Frame(app,pady=10,bg="#b0b0b0")
 contactsFrame.pack(fill="x")
-contactList = tk.Listbox(contactsFrame)
+contactList = tk.Listbox(contactsFrame,width=30)
 contactList.pack(side="left",padx=10)
 scrollbar_y = tk.Scrollbar(contactsFrame)
 scrollbar_y.pack(side="left", fill="y")
