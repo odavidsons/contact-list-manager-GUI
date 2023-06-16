@@ -6,7 +6,6 @@ class dbconnection():
     cursor = ""
 
     def __init__(self,dbhost,dbuser,dbpassword,dbname):
-        #self.conn = mysql.connector.connect(host="localhost",user="dsantos",password="123456",database="contactslist")
         self.conn = mysql.connector.connect(host=dbhost,user=dbuser,password=dbpassword,database=dbname)
         self.cursor = self.conn.cursor()
 
