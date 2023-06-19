@@ -24,21 +24,33 @@ class App(tk.Frame):
 
     #Select and import a JSON file
     def importContactsJSON(self):
+        if self.databaseStatus == True:
+                msg.showinfo(title="Import to database",message="This will import the contacts from the selected file to the database.")
         filetypes = (('JSON files', '*.json'),('All files', '*.*'))
         filename = fd.askopenfilename(title='Open a file',initialdir='/home/dsantos/Documentos/VsCode/Python',filetypes=filetypes)
         try:
             file = open(filename)
             data = json.load(file)
             for contact in data:
-                contactList.insert(tk.END,contact["name"])
-                self.contactsDataJSON.append(contact)
+                #If database connection is set
+                if self.databaseStatus == True:
+                    self.db.insertContact(contact["name"],contact["phone_number"],contact["email"],contact["address"])
+                    contactList.insert(tk.END,contact["name"])
+                #Import to local data
+                else:
+                    contactList.insert(tk.END,contact["name"])
+                    self.contactsDataJSON.append(contact)
         except: pass
 
     #Export the current dictionary as a JSON file
     def exportContactsJSON(self):
         try:
-            if len(self.contactsDataJSON) > 0:
-                json_object = json.dumps(self.contactsDataJSON, indent=4)
+            #If database connecton is set
+            if self.databaseStatus == True:
+                contacts = self.db.getContacts()
+            else: contacts = self.contactsDataJSON
+            if len(contacts) > 0:
+                json_object = json.dumps(contacts, indent=4)
                 filetypes = (('JSON files', '*.json'),('All files', '*.*'))
                 filename = fd.asksaveasfilename(title="Save file",initialdir="/home/dsantos/Documentos/VsCode/Python",filetypes=filetypes)
                 with open(filename, "w") as outfile:
@@ -246,6 +258,12 @@ class App(tk.Frame):
         addBtn = tk.Button(body,text="OK",command=lambda: [self.connectDB(window,inputDBhost.get(),inputDBuser.get(),inputDBpassword.get(),inputDBname.get())])
         addBtn.grid(columnspan=2)
 
+    #Update the contact list counter
+    def contactCounter(self):
+        n_contacts = contactList.size()
+        contactCounter.config(text=f"Total contacts: {n_contacts}")
+        self.after(1000,self.contactCounter)
+
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
         *---------------------------------------------------------------* """
@@ -325,7 +343,10 @@ scrollbar_y.config(command = contactList.yview)
 
 statusFrame = tk.Frame(app)
 statusFrame.pack(fill="x")
+contactCounter = tk.Label(statusFrame,text="Total contacts: 0",bg="#b0b0b0")
+contactCounter.pack(fill="x")
 statusLabel = tk.Label(statusFrame,text="Database Disconnected",fg="white",bg="#2b7287")
 statusLabel.pack(fill="x")
+app.contactCounter()
 
 app.mainloop()
