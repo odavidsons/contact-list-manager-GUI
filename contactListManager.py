@@ -14,7 +14,6 @@ import dbconnection #File containing database class/functions
 class App(tk.Frame):
 
     contactsDataJSON = [] #Contact data is stored in a temporary list while the app is running, which is then used to export
-    contactsDataDB = [] #Contact data imported from a database connection
     db = "" #database connection variable
     databaseStatus = False
 
@@ -80,7 +79,6 @@ class App(tk.Frame):
             #If database connection is set
             if self.databaseStatus == True:
                 self.db.insertContact(name,phone,email,address)
-                self.contactsDataDB.append({"name": name, "phone_number": phone, "email": email, "address": address})
                 contactList.insert(tk.END,name)
             else:
                 #Add a local data entry
@@ -93,12 +91,21 @@ class App(tk.Frame):
     def viewContact(self):
         try:
             selected = contactList.get(contactList.curselection())
-            for contact in self.contactsDataJSON:
-                if contact["name"] == selected:
-                    view_name = contact["name"]
-                    view_phone = contact["phone_number"]
-                    view_email = contact["email"]
-                    view_address = contact["address"]
+            #If database connection is set
+            if self.databaseStatus == True:
+                contact = self.db.getContactByName(selected)
+                view_name = contact[0]["name"]
+                view_phone = contact[0]["phone_number"]
+                view_email = contact[0]["email"]
+                view_address = contact[0]["address"]
+            else:
+                #For local data
+                for contact in self.contactsDataJSON:
+                    if contact["name"] == selected:
+                        view_name = contact["name"]
+                        view_phone = contact["phone_number"]
+                        view_email = contact["email"]
+                        view_address = contact["address"]
             #Open view window
             window = tk.Toplevel(self)
             window.title("View contact")
@@ -129,12 +136,21 @@ class App(tk.Frame):
     def editContactWindow(self):
         try:
             selected = contactList.get(contactList.curselection())
-            for contact in self.contactsDataJSON:
-                if contact["name"] == selected:
-                    edit_name = contact["name"]
-                    edit_phone = contact["phone_number"]
-                    edit_email = contact["email"]
-                    edit_address = contact["address"]
+            #If database connection is set
+            if self.databaseStatus == True:
+                contact = self.db.getContactByName(selected)
+                edit_name = contact[0]["name"]
+                edit_phone = contact[0]["phone_number"]
+                edit_email = contact[0]["email"]
+                edit_address = contact[0]["address"]
+            else:
+                #For local data
+                for contact in self.contactsDataJSON:
+                    if contact["name"] == selected:
+                        edit_name = contact["name"]
+                        edit_phone = contact["phone_number"]
+                        edit_email = contact["email"]
+                        edit_address = contact["address"]
             #Open edit window
             window = tk.Toplevel(self)
             window.title("Edit contact")
@@ -145,21 +161,25 @@ class App(tk.Frame):
             name.grid(row=0,column=0)
             inputName = tk.Entry(body,text=edit_name)
             inputName.grid(row=0,column=1)
+            inputName.delete(0,tk.END)
             inputName.insert(tk.END,edit_name)
             phone = tk.Label(body,text="Phone number:",pady=5)
             phone.grid(row=1,column=0)
             inputPhone = tk.Entry(body,text=edit_phone)
             inputPhone.grid(row=1,column=1)
+            inputPhone.delete(0,tk.END)
             inputPhone.insert(tk.END,edit_phone)
             email = tk.Label(body,text="Email:",pady=5)
             email.grid(row=2,column=0)
             inputEmail = tk.Entry(body,text=edit_email)
             inputEmail.grid(row=2,column=1)
+            inputEmail.delete(0,tk.END)
             inputEmail.insert(tk.END,edit_email)
             address = tk.Label(body,text="Address:",pady=5)
             address.grid(row=3,column=0)
             inputAddress = tk.Entry(body,text=edit_address)
             inputAddress.grid(row=3,column=1)
+            inputAddress.delete(0,tk.END)
             inputAddress.insert(tk.END,edit_address)
             addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
             addBtn.grid(columnspan=2)
@@ -168,12 +188,15 @@ class App(tk.Frame):
     #Execute the operations for editing a contact
     def editContact(self,window,old_name,name,phone,email,address):
         try:
-            for contact in self.contactsDataJSON:
-                if contact["name"] == old_name:
-                    contact["name"] = name
-                    contact["phone_number"] = phone
-                    contact["email"] = email
-                    contact["address"] = address
+            if self.databaseStatus == True:
+                self.db.editContact(old_name,name,phone,email,address)
+            else:
+                for contact in self.contactsDataJSON:
+                    if contact["name"] == old_name:
+                        contact["name"] = name
+                        contact["phone_number"] = phone
+                        contact["email"] = email
+                        contact["address"] = address
             msg.showinfo(title="Success",message="Contact updated")
             window.destroy()
         except: msg.showerror(title="Failed",message="There was en error updating your contact.")
@@ -188,13 +211,9 @@ class App(tk.Frame):
                 #If database connection is set
                 if self.databaseStatus == True:
                     self.db.removeContact(selected)
-                    for contact in self.contactsDataDB:
-                        if contact["name"] == selected:
-                            self.contactsDataDB.pop(self.contactsDataDB.index(contact))
                     contactList.delete(selected_index,selected_index)
-                    print(self.contactsDataDB)
                 else:
-                    #Delete the local data entries
+                    #Delete the local list entry
                     for contact in self.contactsDataJSON:
                         if contact["name"] == selected:
                             self.contactsDataJSON.pop(self.contactsDataJSON.index(contact))
@@ -234,13 +253,25 @@ class App(tk.Frame):
     #Call dbconnection constructor and set variables
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
-            self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
+            #self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
+            self.db = dbconnection.dbconnection("localhost","dsantos","123456","contactslist")
             self.databaseStatus = True
             self.setDatabaseStatus()
             msg.showinfo(title="Connected",message="Connected to database")
             window.destroy()
             self.importContactsDB()
+            databaseMenu.entryconfig("Connect",state="disabled")
         except: msg.showerror(title="Connection failed",message="There was an error connecting to the database")
+
+    def disconnectDB(self):
+        try:
+            self.db.cursor.close()
+            self.db.conn.close()
+            self.databaseStatus = False
+            contactList.delete(0,tk.END)
+            self.setDatabaseStatus()
+            databaseMenu.entryconfig("Connect",state="normal")
+        except: msg.showerror(title="Disconnection failed",message="There was an error disconnecting the database")
 
     #Set the displayed stats of the database connection
     def setDatabaseStatus(self):
@@ -249,9 +280,9 @@ class App(tk.Frame):
         else: statusLabel.config(text="Database Disconnected")
 
     def importContactsDB(self):
-        self.contactsDataDB = self.db.getContacts()
+        dbContacts = self.db.getContacts()
         contactList.delete(0,tk.END)
-        for contact in self.contactsDataDB:
+        for contact in dbContacts:
             contactList.insert(tk.END,contact["name"])
 
 #---------------------------- Run application ----------------------------
@@ -263,7 +294,7 @@ contactsMenu.add_command(label="Import contacts",command=app.importContactsJSON)
 contactsMenu.add_command(label="Export contacts",command=app.exportContactsJSON)
 databaseMenu = tk.Menu(menubar, tearoff=0)
 databaseMenu.add_command(label="Connect",command=app.connectDBWindow)
-databaseMenu.add_command(label="Disconnect",command=app)
+databaseMenu.add_command(label="Disconnect",command=app.disconnectDB)
 menubar.add_cascade(label="Contacts", menu=contactsMenu)
 menubar.add_cascade(label="Database", menu=databaseMenu)
 menubar.add_command(label="Exit", command=app.quit)
