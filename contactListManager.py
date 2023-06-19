@@ -10,6 +10,7 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as msg
 import json
 import dbconnection #File containing database class/functions
+from os import getcwdb
 
 class App(tk.Frame):
 
@@ -27,7 +28,7 @@ class App(tk.Frame):
         if self.databaseStatus == True:
                 msg.showinfo(title="Import to database",message="This will import the contacts from the selected file to the database.")
         filetypes = (('JSON files', '*.json'),('All files', '*.*'))
-        filename = fd.askopenfilename(title='Open a file',initialdir='/home/dsantos/Documentos/VsCode/Python',filetypes=filetypes)
+        filename = fd.askopenfilename(title='Open a file',initialdir=getcwdb(),filetypes=filetypes)
         try:
             file = open(filename)
             data = json.load(file)
@@ -52,7 +53,7 @@ class App(tk.Frame):
             if len(contacts) > 0:
                 json_object = json.dumps(contacts, indent=4)
                 filetypes = (('JSON files', '*.json'),('All files', '*.*'))
-                filename = fd.asksaveasfilename(title="Save file",initialdir="/home/dsantos/Documentos/VsCode/Python",filetypes=filetypes)
+                filename = fd.asksaveasfilename(title="Save file",initialdir=getcwdb(),filetypes=filetypes)
                 with open(filename, "w") as outfile:
                     outfile.write(json_object)
                 msg.showinfo(title="Success",message="Your contacts were exported. ("+filename+")")
