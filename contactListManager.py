@@ -4,13 +4,13 @@ Allows the user to add new, edit and remove contacts, as well as import or expor
 
 Made by David Santos - https://github.com/odavidsons/contactListManager-GUI
 """
-
+import dbconnection #File containing database class/functions
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import messagebox as msg
 import json
-import dbconnection #File containing database class/functions
-from os import getcwdb
+from os import getcwdb,path
+from configparser import ConfigParser
 
 class App(tk.Frame):
 
@@ -22,6 +22,7 @@ class App(tk.Frame):
         tk.Frame.__init__(self,master)
         self.config(width=300,height=400)
         self.pack()
+        self.initializeConfig()
 
     #Select and import a JSON file
     def importContactsJSON(self):
@@ -254,6 +255,7 @@ class App(tk.Frame):
 
     #Create a Window for inputing the database details
     def connectDBWindow(self):
+        database_details = self.loadServerConfig() #Load the server details from the configuration file
         window = tk.Toplevel(self)
         window.title("Database details")
         window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
@@ -263,18 +265,22 @@ class App(tk.Frame):
         DBhost.grid(row=0,column=0)
         inputDBhost = tk.Entry(body)
         inputDBhost.grid(row=0,column=1)
+        inputDBhost.insert(0,database_details[0])
         DBuser = tk.Label(body,text="User:",pady=5)
         DBuser.grid(row=1,column=0)
         inputDBuser = tk.Entry(body)
         inputDBuser.grid(row=1,column=1)
+        inputDBuser.insert(0,database_details[1])
         DBpassword = tk.Label(body,text="Password:",pady=5)
         DBpassword.grid(row=2,column=0)
         inputDBpassword = tk.Entry(body)
         inputDBpassword.grid(row=2,column=1)
+        inputDBpassword.insert(0,database_details[2])
         DBname = tk.Label(body,text="Database name:",pady=5)
         DBname.grid(row=3,column=0)
         inputDBname = tk.Entry(body)
         inputDBname.grid(row=3,column=1)
+        inputDBname.insert(0,database_details[3])
         addBtn = tk.Button(body,text="OK",command=lambda: [self.connectDB(window,inputDBhost.get(),inputDBuser.get(),inputDBpassword.get(),inputDBname.get())])
         addBtn.grid(columnspan=2)
 
@@ -285,6 +291,48 @@ class App(tk.Frame):
         self.after(1000,self.contactCounter)
 
     """ *---------------------------------------------------------------*
+        |         Functions for configuration file handling             |
+        *---------------------------------------------------------------* """
+
+    #Create the config file, or read it if it does exist
+    def initializeConfig(self):
+        self.configFile = ConfigParser()
+        if not path.exists('config.ini'):
+            self.configFile['DATABASE_DETAILS'] = {'dbhost': '', 'dbuser': '', 'dbpwd': '', 'dbname': ''}
+            with open('config.ini', 'w') as configfile:
+                self.configFile.write(configfile)
+        else: self.configFile.read('config.ini')
+
+    #Load the parameters from the DATABASE_DETAILS of the config file to fill out the connection form
+    def loadServerConfig(self):
+        try:
+            self.configFile.read('config.ini')
+            dbhost = self.configFile.get('DATABASE_DETAILS','dbhost')
+            dbuser = self.configFile.get('DATABASE_DETAILS','dbuser')
+            dbpwd = self.configFile.get('DATABASE_DETAILS','dbpwd')
+            dbname = self.configFile.get('DATABASE_DETAILS','dbname')
+        except:
+            dbhost = ''
+            dbuser = ''
+            dbpwd = ''
+            dbname = ''
+        return dbhost,dbuser,dbpwd,dbname
+
+    #Save the DATABASE_DETAILS section of the config file if a connection has been set successfully
+    def saveServerConfig(self,dbhost,dbuser,dbpwd,dbname):
+        try:
+            self.configFile.read('config.ini')
+            self.configFile.set('DATABASE_DETAILS','dbhost',dbhost)
+            self.configFile.set('DATABASE_DETAILS','dbuser',dbuser)
+            self.configFile.set('DATABASE_DETAILS','dbpwd',dbpwd)
+            self.configFile.set('DATABASE_DETAILS','dbname',dbname)
+            with open('config.ini', 'w') as configFile:
+                self.configFile.write(configFile)
+            return True
+        except:
+            return False
+
+    """ *---------------------------------------------------------------*
         |                Functions for database handling                |
         *---------------------------------------------------------------* """
 
@@ -292,6 +340,7 @@ class App(tk.Frame):
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
             self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
+            self.saveServerConfig(dbhost,dbuser,dbpassword,dbname)
             self.databaseStatus = True
             self.setDatabaseStatus()
             msg.showinfo(title="Connected",message="Connected to database")
