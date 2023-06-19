@@ -271,8 +271,7 @@ class App(tk.Frame):
     #Call dbconnection constructor and set variables
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
-            #self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
-            self.db = dbconnection.dbconnection("localhost","dsantos","123456","contactslist")
+            self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
             self.databaseStatus = True
             self.setDatabaseStatus()
             msg.showinfo(title="Connected",message="Connected to database")
