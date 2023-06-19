@@ -1,7 +1,7 @@
 """
 Class file containing all of the database operation functions. Imported by the main program (contactListManager.py)
 
-Made by David Santos - https://github.com/odavidsons/contactListManager-GUI
+Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
 
 import mysql.connector
