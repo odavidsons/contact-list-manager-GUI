@@ -2,7 +2,7 @@
 Basic python app for managing a list of contacs.
 Allows the user to add new, edit and remove contacts, as well as import or export the list as a JSON file.
 
-Made by David Santos - https://github.com/odavidsons/contactListManager-GUI
+Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
 import dbconnection #File containing database class/functions
 import tkinter as tk
