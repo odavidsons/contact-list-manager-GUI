@@ -10,6 +10,13 @@ Made with the tkinter GUI toolkit and python 3.10
 The application works both for local and database storage:
 
 - Local storage: All contact entries can be imported and exported via JSON files.
-- Database storage: It's possible to create a connection to a databse by inputting it's credentials, and all the data is handled in the remote database.
+- Database storage: It's possible to create a MySQL connection by inputting the credentials, and all the data is handled in the remote database.
 
-The currently supported database structure dump is provided in the repository (database.sql)
+The currently supported database structure dump is provided in the repository (database.sql).
+
+You should create a database called 'contactslist' and import the dump to it.
+```
+mysql> CREATE DATABASE contactslist;
+mysql> USE contactslist;
+mysql> source (path_to_file)/database.sql;
+```
