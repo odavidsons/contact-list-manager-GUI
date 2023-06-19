@@ -19,7 +19,7 @@ class dbconnection():
         self.cursor.execute("select * from contacts")
         contacts = []
         for row in self.cursor:
-            contacts.append({"name": row[1], "phone_number": row[2], "email": row[3], "address": row[4]})
+            contacts.append({"name": row[1], "phone_number": row[2], "email": row[3], "address": row[4], "gender": row[5]})
         return contacts
 
     def getContactByName(self,name):
@@ -28,14 +28,14 @@ class dbconnection():
             self.cursor.execute(query)
             contact = []
             for row in self.cursor:
-                contact.append({"name": row[1], "phone_number": row[2], "email": row[3], "address": row[4]})
+                contact.append({"name": row[1], "phone_number": row[2], "email": row[3], "address": row[4], "gender": row[5]})
             return contact
         except:
             print("Error in getContactByName()")
 
-    def insertContact(self,name,phone_number,email,address):
-        query = "INSERT INTO contacts (name,phone_number,email,address) VALUES (%s, %s, %s, %s)"
-        values = (name,phone_number,email,address)
+    def insertContact(self,name,phone_number,email,address,gender):
+        query = "INSERT INTO contacts (name,phone_number,email,address,gender) VALUES (%s, %s, %s, %s, %s)"
+        values = (name,phone_number,email,address,gender)
         try:
             self.cursor.execute(query,values)
             self.conn.commit()
@@ -43,8 +43,8 @@ class dbconnection():
             self.conn.rollback()
             print("Error in insertContact()")
 
-    def editContact(self,old_name,name,phone_number,email,address):
-        query = f"UPDATE contacts SET name = '{name}',phone_number = '{phone_number}',email = '{email}',address = '{address}' WHERE name = '{old_name}'"
+    def editContact(self,old_name,name,phone_number,email,address,gender):
+        query = f"UPDATE contacts SET name = '{name}',phone_number = '{phone_number}',email = '{email}',address = '{address}',gender = '{gender}' WHERE name = '{old_name}'"
         try:
             self.cursor.execute(query)
             self.conn.commit()
