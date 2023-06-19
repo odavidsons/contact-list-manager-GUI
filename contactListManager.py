@@ -34,7 +34,7 @@ class App(tk.Frame):
             for contact in data:
                 #If database connection is set
                 if self.databaseStatus == True:
-                    self.db.insertContact(contact["name"],contact["phone_number"],contact["email"],contact["address"])
+                    self.db.insertContact(contact["name"],contact["phone_number"],contact["email"],contact["address"],contact["gender"])
                     contactList.insert(tk.END,contact["name"])
                 #Import to local data
                 else:
@@ -82,19 +82,24 @@ class App(tk.Frame):
         address.grid(row=3,column=0)
         inputAddress = tk.Entry(body)
         inputAddress.grid(row=3,column=1)
-        addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(window,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
+        gender = tk.Label(body,text="Gender:",pady=5)
+        gender.grid(row=4,column=0)
+        gender_value = tk.StringVar(body,"Select a gender")
+        inputGender = tk.OptionMenu(body,gender_value,"Male","Female","Other")
+        inputGender.grid(row=4,column=1)
+        addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(window,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
         addBtn.grid(columnspan=2)
 
     #Execute the operations for adding a new contact
-    def addContact(self,window,name,phone,email,address):
+    def addContact(self,window,name,phone,email,address,gender):
         if name != "":
             #If database connection is set
             if self.databaseStatus == True:
-                self.db.insertContact(name,phone,email,address)
+                self.db.insertContact(name,phone,email,address,gender)
                 contactList.insert(tk.END,name)
             else:
                 #Add a local data entry
-                self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address})
+                self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address, "gender": gender})
                 contactList.insert(tk.END,name)
             window.destroy()
         else: msg.showwarning(title="Missing field",message="Please enter at least the contact name")
@@ -110,6 +115,7 @@ class App(tk.Frame):
                 view_phone = contact[0]["phone_number"]
                 view_email = contact[0]["email"]
                 view_address = contact[0]["address"]
+                view_gender = contact[0]["gender"]
             else:
                 #For local data
                 for contact in self.contactsDataJSON:
@@ -118,6 +124,7 @@ class App(tk.Frame):
                         view_phone = contact["phone_number"]
                         view_email = contact["email"]
                         view_address = contact["address"]
+                        view_gender = contact["gender"]
             #Open view window
             window = tk.Toplevel(self)
             window.title("View contact")
@@ -140,6 +147,10 @@ class App(tk.Frame):
             address.grid(row=3,column=0)
             inputAddress = tk.Label(body,text=view_address)
             inputAddress.grid(row=3,column=1)
+            gender = tk.Label(body,text="Gender:",pady=5)
+            gender.grid(row=4,column=0)
+            inputGender = tk.Label(body,text=view_gender)
+            inputGender.grid(row=4,column=1)
             addBtn = tk.Button(body,text="Close",command=window.destroy)
             addBtn.grid(columnspan=2)
         except: pass
@@ -155,6 +166,7 @@ class App(tk.Frame):
                 edit_phone = contact[0]["phone_number"]
                 edit_email = contact[0]["email"]
                 edit_address = contact[0]["address"]
+                edit_gender = contact[0]["gender"]
             else:
                 #For local data
                 for contact in self.contactsDataJSON:
@@ -163,6 +175,7 @@ class App(tk.Frame):
                         edit_phone = contact["phone_number"]
                         edit_email = contact["email"]
                         edit_address = contact["address"]
+                        edit_gender = contact["gender"]
             #Open edit window
             window = tk.Toplevel(self)
             window.title("Edit contact")
@@ -193,15 +206,20 @@ class App(tk.Frame):
             inputAddress.grid(row=3,column=1)
             inputAddress.delete(0,tk.END)
             inputAddress.insert(tk.END,edit_address)
-            addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get())])
+            gender = tk.Label(body,text="Gender:",pady=5)
+            gender.grid(row=4,column=0)
+            gender_value = tk.StringVar(body,edit_gender)
+            inputGender = tk.OptionMenu(body,gender_value,"Male","Female","Other")
+            inputGender.grid(row=4,column=1)
+            addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
             addBtn.grid(columnspan=2)
         except: pass
 
     #Execute the operations for editing a contact
-    def editContact(self,window,old_name,name,phone,email,address):
+    def editContact(self,window,old_name,name,phone,email,address,gender):
         try:
             if self.databaseStatus == True:
-                self.db.editContact(old_name,name,phone,email,address)
+                self.db.editContact(old_name,name,phone,email,address,gender)
             else:
                 for contact in self.contactsDataJSON:
                     if contact["name"] == old_name:
@@ -209,6 +227,7 @@ class App(tk.Frame):
                         contact["phone_number"] = phone
                         contact["email"] = email
                         contact["address"] = address
+                        contact["gender"] = gender
             msg.showinfo(title="Success",message="Contact updated")
             window.destroy()
         except: msg.showerror(title="Failed",message="There was en error updating your contact.")
