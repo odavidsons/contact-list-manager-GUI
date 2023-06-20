@@ -20,9 +20,9 @@ The application works both for local and database storage:
 - [X] Settings menu for toggling multiple options
 - [X] Auto connect to database on open
 - [X] Reset saved connection details
+- [X] Keep log file
 
 **Planned features**
-- [ ] Keep log file
 - [ ] Variant with user authentication
 - [ ] More contact data fields
 
