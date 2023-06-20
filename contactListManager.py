@@ -44,6 +44,7 @@ class App(tk.Frame):
                 else:
                     contactList.insert(tk.END,contact["name"])
                     self.contactsDataJSON.append(contact)
+            if self.filehandling.logger != '': self.filehandling.logger.info(f'Imported contacts list from ({filename})')
         except: pass
 
     #Export the current dictionary as a JSON file
@@ -60,6 +61,7 @@ class App(tk.Frame):
                 with open(filename, "w") as outfile:
                     outfile.write(json_object)
                 msg.showinfo(title="Success",message="Your contacts were exported. ("+filename+")")
+                if self.filehandling.logger != '': self.filehandling.logger.info(f'Exported contacts list to ({filename})')
             else: msg.showerror(title="Failed",message="You have no data to export!")
         except: msg.showerror(title="Error",message="There was an error while exporting your contacts")
 
@@ -354,7 +356,10 @@ class App(tk.Frame):
             keep_logs = self.configFile.get('GLOBAL_SETTINGS','keep_logs')
             if keep_logs == '1':
                 self.filehandling.configLog()
-                self.db.logger = self.filehandling.logger #Pass the logger object to the dbconnection object
+                #If auto_connect was on, pass the newly created logger object
+                if self.db:
+                    self.db.logger = self.filehandling.logger
+                    print(self.db.logger)
 
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
