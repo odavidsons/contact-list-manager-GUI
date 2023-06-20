@@ -3,13 +3,14 @@ Class file containing all of the database operation functions. Imported by the m
 
 Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
-
+import filehandling #Import file handling functions for logging
 import mysql.connector
 
 class dbconnection():
 
     conn = ""
     cursor = ""
+    logger = ''
 
     def __init__(self,dbhost,dbuser,dbpassword,dbname):
         self.conn = mysql.connector.connect(host=dbhost,user=dbuser,password=dbpassword,database=dbname)
@@ -20,6 +21,8 @@ class dbconnection():
         contacts = []
         for row in self.cursor:
             contacts.append({"name": row[1], "phone_number": row[2], "email": row[3], "address": row[4], "gender": row[5]})
+        #If the logger variable is set with the object from filehandling.py
+        if self.logger != '': self.logger.info('Imported all contacts from database')
         return contacts
 
     def getContactByName(self,name):
@@ -39,6 +42,8 @@ class dbconnection():
         try:
             self.cursor.execute(query,values)
             self.conn.commit()
+            #If the logger variable is set with the object from filehandling.py
+            if self.logger != '': self.logger.info(f'Inserted contact (Name: {name},Phone: {phone_number},Email: {email},Address: {address})')
         except: 
             self.conn.rollback()
             print("Error in insertContact()")
@@ -48,6 +53,8 @@ class dbconnection():
         try:
             self.cursor.execute(query)
             self.conn.commit()
+            #If the logger variable is set with the object from filehandling.py
+            if self.logger != '': self.logger.info(f'Updated contact (Name: {name},Phone: {phone_number},Email: {email},Address: {address})')
         except:
             self.conn.rollback()
             print("Error in editContact()")
@@ -57,6 +64,8 @@ class dbconnection():
         try:
             self.cursor.execute(query)
             self.conn.commit()
+            #If the logger variable is set with the object from filehandling.py
+            if self.logger != '': self.logger.info(f'Removed contact (Name: {name})')
         except:
             self.conn.rollback()
             print("Error in removeContact()")

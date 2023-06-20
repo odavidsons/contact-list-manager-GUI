@@ -163,6 +163,7 @@ class App(tk.Frame):
     def editContactWindow(self):
         try:
             selected = contactList.get(contactList.curselection())
+            selected_index = contactList.curselection()
             #If database connection is set
             if self.databaseStatus == True:
                 contact = self.db.getContactByName(selected)
@@ -215,15 +216,19 @@ class App(tk.Frame):
             gender_value = tk.StringVar(body,edit_gender)
             inputGender = tk.OptionMenu(body,gender_value,"Male","Female","Other")
             inputGender.grid(row=4,column=1)
-            addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
+            addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected_index,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
             addBtn.grid(columnspan=2)
         except: pass
 
     #Execute the operations for editing a contact
-    def editContact(self,window,old_name,name,phone,email,address,gender):
+    def editContact(self,window,selected_index,name,phone,email,address,gender):
         try:
+            old_name = contactList.get(selected_index)
             if self.databaseStatus == True:
                 self.db.editContact(old_name,name,phone,email,address,gender)
+                #Update the listbox entry with the new name
+                contactList.delete(selected_index,selected_index)
+                contactList.insert(selected_index,name)
             else:
                 for contact in self.contactsDataJSON:
                     if contact["name"] == old_name:
@@ -292,6 +297,7 @@ class App(tk.Frame):
         contactCounter.config(text=f"Total contacts: {n_contacts}")
         self.after(1000,self.contactCounter)
 
+    #Create a window for changing the application settings
     def settingsWindow(self):
         global_settings = self.filehandling.loadGlobalConfig()
         autoConnect = tk.StringVar()
@@ -310,7 +316,7 @@ class App(tk.Frame):
         chk_autoConn.grid(row=0,column=1)
         label2 = tk.Label(window, text="Keep logs:",pady=5)
         label2.grid(row=1,column=0)
-        chk_keepLogs = tk.Checkbutton(window,variable=keepLogs,onvalue=1,offvalue=0,state="disabled")
+        chk_keepLogs = tk.Checkbutton(window,variable=keepLogs,onvalue=1,offvalue=0)
         chk_keepLogs.grid(row=1,column=1)
         label3 = tk.Label(window,text="Delete saved connection details")
         label3.grid(row=2,column=0)
@@ -344,6 +350,11 @@ class App(tk.Frame):
                 if database_details[0] != '':
                     self.connectDB(tk.Frame(),database_details[0],database_details[1],database_details[2],database_details[3])
                 else: msg.showwarning(title="Auto connect error",message="You have turned on 'Auto connect' in the settings, but you don't have a saved database connection!")
+            #Check if the keep logs setting is on
+            keep_logs = self.configFile.get('GLOBAL_SETTINGS','keep_logs')
+            if keep_logs == '1':
+                self.filehandling.configLog()
+                self.db.logger = self.filehandling.logger #Pass the logger object to the dbconnection object
 
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
@@ -353,6 +364,7 @@ class App(tk.Frame):
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
             self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
+            self.db.logger = self.filehandling.logger #Pass the logger object to the dbconnection object
             self.filehandling.saveDatabaseConfig(dbhost,dbuser,dbpassword,dbname)
             self.databaseStatus = True
             self.setDatabaseStatus()
