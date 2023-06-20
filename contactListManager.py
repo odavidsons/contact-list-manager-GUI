@@ -4,7 +4,10 @@ Allows the user to add new, edit and remove contacts, as well as import or expor
 
 Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
+#File imports
 import dbconnection #File containing database class/functions
+import filehandling
+#Module imports
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import messagebox as msg
@@ -254,7 +257,7 @@ class App(tk.Frame):
 
     #Create a Window for inputing the database details
     def connectDBWindow(self):
-        database_details = self.loadDatabaseConfig() #Load the server details from the configuration file
+        database_details = self.filehandling.loadDatabaseConfig() #Load the server details from the configuration file
         window = tk.Toplevel(self)
         window.title("Database details")
         window.geometry(f'+{self.winfo_rootx()}+{self.winfo_rooty()}')
@@ -290,7 +293,7 @@ class App(tk.Frame):
         self.after(1000,self.contactCounter)
 
     def settingsWindow(self):
-        global_settings = self.loadGlobalConfig()
+        global_settings = self.filehandling.loadGlobalConfig()
         autoConnect = tk.StringVar()
         autoConnect.set(global_settings[0])
         keepLogs = tk.StringVar()
@@ -311,20 +314,21 @@ class App(tk.Frame):
         chk_keepLogs.grid(row=1,column=1)
         label3 = tk.Label(window,text="Delete saved connection details")
         label3.grid(row=2,column=0)
-        delDBBtn = tk.Button(window,text="Delete", command=self.resetDatabaseConfig)
+        delDBBtn = tk.Button(window,text="Delete", command=self.filehandling.resetDatabaseConfig)
         delDBBtn.grid(row=2,column=1)
-        database_details = self.loadDatabaseConfig()
+        database_details = self.filehandling.loadDatabaseConfig()
         if database_details[0] == '': delDBBtn.config(state="disabled")
-        saveBtn = tk.Button(window, text="Save", command=lambda: self.saveGlobalConfig(window,autoConnect.get(),keepLogs.get()))
+        saveBtn = tk.Button(window, text="Save", command=lambda: self.filehandling.saveGlobalConfig(window,autoConnect.get(),keepLogs.get()))
         saveBtn.grid(row=3,column=0,columnspan=2)
 
     """ *---------------------------------------------------------------*
-        |         Functions for configuration file handling             |
+        |         Functions for config and logs file handling           |
         *---------------------------------------------------------------* """
 
-    #Create the config file, or read it if it does exist
-    def initializeConfig(self):
+    #Create the filehandling constructor
+    def initializeFiles(self):
         self.configFile = ConfigParser()
+        self.filehandling = filehandling.filehandling(self.configFile)
         if not path.exists('config.ini'):
             self.configFile['DATABASE_DETAILS'] = {'dbhost': '', 'dbuser': '', 'dbpwd': '', 'dbname': ''}
             self.configFile['GLOBAL_SETTINGS'] = {'auto_connect': 0, 'keep_logs': 0}
@@ -335,77 +339,11 @@ class App(tk.Frame):
             #Check if the auto connect setting is on
             auto_connect = self.configFile.get('GLOBAL_SETTINGS','auto_connect')
             if auto_connect == '1':
-                database_details = self.loadDatabaseConfig()
+                database_details = self.filehandling.loadDatabaseConfig()
                 #If the connection details are missing, throw a warning saying that this settings is not working properly
                 if database_details[0] != '':
                     self.connectDB(tk.Frame(),database_details[0],database_details[1],database_details[2],database_details[3])
                 else: msg.showwarning(title="Auto connect error",message="You have turned on 'Auto connect' in the settings, but you don't have a saved database connection!")
-
-    #Load the parameters from the DATABASE_DETAILS of the config file to fill out the connection form
-    def loadDatabaseConfig(self):
-        try:
-            self.configFile.read('config.ini')
-            dbhost = self.configFile.get('DATABASE_DETAILS','dbhost')
-            dbuser = self.configFile.get('DATABASE_DETAILS','dbuser')
-            dbpwd = self.configFile.get('DATABASE_DETAILS','dbpwd')
-            dbname = self.configFile.get('DATABASE_DETAILS','dbname')
-        except:
-            dbhost = ''
-            dbuser = ''
-            dbpwd = ''
-            dbname = ''
-        return dbhost,dbuser,dbpwd,dbname
-
-    def loadGlobalConfig(self):
-        try:
-            self.configFile.read('config.ini')
-            rememberConn = self.configFile.get('GLOBAL_SETTINGS','auto_connect')
-            keepLogs = self.configFile.get('GLOBAL_SETTINGS','keep_logs')
-        except:
-            rememberConn = 0
-            keepLogs = 0
-        return rememberConn,keepLogs
-
-
-    #Save the DATABASE_DETAILS section of the config file if a connection has been set successfully
-    def saveDatabaseConfig(self,dbhost,dbuser,dbpwd,dbname):
-        try:
-            self.configFile.read('config.ini')
-            self.configFile.set('DATABASE_DETAILS','dbhost',dbhost)
-            self.configFile.set('DATABASE_DETAILS','dbuser',dbuser)
-            self.configFile.set('DATABASE_DETAILS','dbpwd',dbpwd)
-            self.configFile.set('DATABASE_DETAILS','dbname',dbname)
-            with open('config.ini', 'w') as configFile:
-                self.configFile.write(configFile)
-            return True
-        except:
-            return False
-
-    def saveGlobalConfig(self,window,rememberConn,keepLogs):
-        try:
-            self.configFile.read('config.ini')
-            self.configFile.set('GLOBAL_SETTINGS','auto_connect',rememberConn)
-            self.configFile.set('GLOBAL_SETTINGS','keep_logs',keepLogs)
-            with open('config.ini', 'w') as configFile:
-                self.configFile.write(configFile)
-            window.destroy()
-            return True
-        except:
-            return False
-
-    def resetDatabaseConfig(self):
-        try:
-            self.configFile.read('config.ini')
-            self.configFile.set('DATABASE_DETAILS','dbhost','')
-            self.configFile.set('DATABASE_DETAILS','dbuser','')
-            self.configFile.set('DATABASE_DETAILS','dbpwd','')
-            self.configFile.set('DATABASE_DETAILS','dbname','')
-            with open('config.ini', 'w') as configFile:
-                self.configFile.write(configFile)
-            msg.showinfo(title="Deleted details",message="Your connection details have been reset.")
-            return True
-        except:
-            return False
 
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
@@ -415,7 +353,7 @@ class App(tk.Frame):
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
             self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
-            self.saveDatabaseConfig(dbhost,dbuser,dbpassword,dbname)
+            self.filehandling.saveDatabaseConfig(dbhost,dbuser,dbpassword,dbname)
             self.databaseStatus = True
             self.setDatabaseStatus()
             msg.showinfo(title="Connected",message="Connected to database")
@@ -494,5 +432,5 @@ contactCounter.pack(fill="x")
 statusLabel = tk.Label(statusFrame,text="Database Disconnected",fg="white",bg="#2b7287")
 statusLabel.pack(fill="x")
 app.contactCounter()
-app.initializeConfig() #Check for the existance of a config file
+app.initializeFiles() #Check for the existance of a config file
 app.mainloop()
