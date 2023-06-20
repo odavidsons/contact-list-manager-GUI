@@ -1,19 +1,19 @@
 """
-Class file containing all of the configuration and logs file handling. Imported by the main program (contactListManager.py)
+Class file containing all of the configuration and logs file handling functions.
+Imported by the main program (contactListManager.py)
 
 Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
 
 from tkinter import messagebox as msg
-from os import path
-from configparser import ConfigParser
-from tkinter import Frame
+import logging
 
 class filehandling():
 
-    configFile = ""
-    app = ""
+    configFile = ''
+    logger = ''
 
+    #Constructor
     def __init__(self,configFile):
         self.configFile = configFile
 
@@ -85,4 +85,11 @@ class filehandling():
         except:
             return False
         
-        #--------------------------------* LOGS FILE *--------------------------------#
+    #--------------------------------* LOGS FILE *--------------------------------#
+
+    #Configure the logging parameters and setup a logger object
+    def configLog(self):
+        logging.basicConfig(filename='contactslog.log',filemode='a',format='%(asctime)s %(message)s',encoding='utf-8')
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.info('App started')
