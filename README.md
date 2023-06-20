@@ -4,16 +4,27 @@ Basic contact list manager app that allows the user to add, edit, remove and vie
 
 Made with the tkinter GUI toolkit and python 3.10
 
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/57f9ad6e-c131-4b8f-b4da-82de61a3a257)
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/ea9b674b-6adf-44b3-83ea-71bfab76140d)
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/550f144f-1979-4a72-b1cc-0f581e716976)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/9db25f96-14e7-4322-876c-f2581d958b67)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/104caf15-e093-4265-bf86-c14bc4a25be0)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/d3aa90de-27ce-4c2e-ae9e-df8e3c27ff40)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/3adc626f-8cd6-4785-bc45-4790a99f4a1a)
 
 ## Features
 
 The application works both for local and database storage:
 
-- Local storage: All contact entries are stored within the application's memory temporarily. They can be imported and exported via a JSON file with the correct format. An example is provided in the repository files (contacts.json)
-- Database storage: It's possible to connect to a MySQL database by inputting the connection details. All the data is imported automatically and the operations then happen directly to the database. The connection details are also saved in a configuration file and automatically loaded when you open the 'Connect' menu.
+- [X] Import and export contacts via JSON files.
+- [X] Connect to a MySQL database.
+- [X] Import and export data from database.
+- [X] Keep a configuration file with the saved connection details and other settings.
+- [X] Settings menu for toggling multiple options
+- [X] Auto connect to database on open
+- [X] Reset saved connection details
+
+**Planned features**
+- [ ] Keep log file
+- [ ] Variant with user authentication
+- [ ] More contact data fields
 
 ## Setup
 
