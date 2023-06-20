@@ -12,8 +12,18 @@ Made with the tkinter GUI toolkit and python 3.10
 
 The application works both for local and database storage:
 
-- Local storage: All contact entries are stored within the application's memory temporarily. They can be imported and exported via a JSON file with the correct format. An example is provided in the repository files (contacts.json)
-- Database storage: It's possible to connect to a MySQL database by inputting the connection details. All the data is imported automatically and the operations then happen directly to the database. The connection details are also saved in a configuration file and automatically loaded when you open the 'Connect' menu.
+- [X] Import and export contacts via JSON files.
+- [X] Connect to a MySQL database.
+- [X] Import and export data from database.
+- [X] Keep a configuration file with the saved connection details and other settings.
+- [X] Settings menu for toggling multiple options
+- [X] Auto connect to database on open
+- [X] Reset saved connection details
+
+**Planned features**
+- [ ] Keep log file
+- [ ] Variant with user authentication
+- [ ] More contact data fields
 
 ## Setup
 

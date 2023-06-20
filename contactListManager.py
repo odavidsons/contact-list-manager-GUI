@@ -309,8 +309,14 @@ class App(tk.Frame):
         label2.grid(row=1,column=0)
         chk_keepLogs = tk.Checkbutton(window,variable=keepLogs,onvalue=1,offvalue=0,state="disabled")
         chk_keepLogs.grid(row=1,column=1)
+        label3 = tk.Label(window,text="Delete saved connection details")
+        label3.grid(row=2,column=0)
+        delDBBtn = tk.Button(window,text="Delete", command=self.resetDatabaseConfig)
+        delDBBtn.grid(row=2,column=1)
+        database_details = self.loadDatabaseConfig()
+        if database_details[0] == '': delDBBtn.config(state="disabled")
         saveBtn = tk.Button(window, text="Save", command=lambda: self.saveGlobalConfig(window,autoConnect.get(),keepLogs.get()))
-        saveBtn.grid(row=2,column=0,columnspan=2)
+        saveBtn.grid(row=3,column=0,columnspan=2)
 
     """ *---------------------------------------------------------------*
         |         Functions for configuration file handling             |
@@ -362,7 +368,7 @@ class App(tk.Frame):
 
 
     #Save the DATABASE_DETAILS section of the config file if a connection has been set successfully
-    def saveServerConfig(self,dbhost,dbuser,dbpwd,dbname):
+    def saveDatabaseConfig(self,dbhost,dbuser,dbpwd,dbname):
         try:
             self.configFile.read('config.ini')
             self.configFile.set('DATABASE_DETAILS','dbhost',dbhost)
@@ -387,6 +393,20 @@ class App(tk.Frame):
         except:
             return False
 
+    def resetDatabaseConfig(self):
+        try:
+            self.configFile.read('config.ini')
+            self.configFile.set('DATABASE_DETAILS','dbhost','')
+            self.configFile.set('DATABASE_DETAILS','dbuser','')
+            self.configFile.set('DATABASE_DETAILS','dbpwd','')
+            self.configFile.set('DATABASE_DETAILS','dbname','')
+            with open('config.ini', 'w') as configFile:
+                self.configFile.write(configFile)
+            msg.showinfo(title="Deleted details",message="Your connection details have been reset.")
+            return True
+        except:
+            return False
+
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
         *---------------------------------------------------------------* """
@@ -395,13 +415,14 @@ class App(tk.Frame):
     def connectDB(self,window,dbhost,dbuser,dbpassword,dbname):
         try:
             self.db = dbconnection.dbconnection(dbhost,dbuser,dbpassword,dbname)
-            self.saveServerConfig(dbhost,dbuser,dbpassword,dbname)
+            self.saveDatabaseConfig(dbhost,dbuser,dbpassword,dbname)
             self.databaseStatus = True
             self.setDatabaseStatus()
             msg.showinfo(title="Connected",message="Connected to database")
             window.destroy()
             self.importContactsDB()
             databaseMenu.entryconfig("Connect",state="disabled")
+            databaseMenu.entryconfig("Disconnect",state="normal")
         except: msg.showerror(title="Connection failed",message="There was an error connecting to the database")
 
     def disconnectDB(self):
@@ -412,6 +433,7 @@ class App(tk.Frame):
             contactList.delete(0,tk.END)
             self.setDatabaseStatus()
             databaseMenu.entryconfig("Connect",state="normal")
+            databaseMenu.entryconfig("Disconnect",state="disabled")
         except: msg.showerror(title="Disconnection failed",message="There was an error disconnecting the database")
 
     #Set the displayed stats of the database connection
@@ -435,7 +457,7 @@ contactsMenu.add_command(label="Import contacts",command=app.importContactsJSON)
 contactsMenu.add_command(label="Export contacts",command=app.exportContactsJSON)
 databaseMenu = tk.Menu(menubar, tearoff=0)
 databaseMenu.add_command(label="Connect",command=app.connectDBWindow)
-databaseMenu.add_command(label="Disconnect",command=app.disconnectDB)
+databaseMenu.add_command(label="Disconnect",command=app.disconnectDB,state="disabled")
 menubar.add_cascade(label="Contacts", menu=contactsMenu)
 menubar.add_cascade(label="Database", menu=databaseMenu)
 menubar.add_command(label="Settings",command=app.settingsWindow)
