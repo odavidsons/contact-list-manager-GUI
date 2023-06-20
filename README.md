@@ -4,9 +4,10 @@ Basic contact list manager app that allows the user to add, edit, remove and vie
 
 Made with the tkinter GUI toolkit and python 3.10
 
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/57f9ad6e-c131-4b8f-b4da-82de61a3a257)
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/ea9b674b-6adf-44b3-83ea-71bfab76140d)
-![image](https://github.com/odavidsons/contactListManager-GUI/assets/122760540/550f144f-1979-4a72-b1cc-0f581e716976)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/9db25f96-14e7-4322-876c-f2581d958b67)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/104caf15-e093-4265-bf86-c14bc4a25be0)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/d3aa90de-27ce-4c2e-ae9e-df8e3c27ff40)
+![image](https://github.com/odavidsons/contact-list-manager-GUI/assets/122760540/3adc626f-8cd6-4785-bc45-4790a99f4a1a)
 
 ## Features
 
