@@ -24,7 +24,7 @@ class App(tk.Frame):
     def __init__(self,master=None):
         tk.Frame.__init__(self,master)
         self.config(width=300,height=400)
-        self.pack()
+        self.pack(expand=True)
 
     #Select and import a JSON file
     def importContactsJSON(self):
@@ -95,6 +95,7 @@ class App(tk.Frame):
         inputGender.grid(row=4,column=1)
         addBtn = tk.Button(body,text="OK",command=lambda: [self.addContact(window,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
         addBtn.grid(columnspan=2)
+        self.make_dynamic(window)
 
     #Execute the operations for adding a new contact
     def addContact(self,window,name,phone,email,address,gender):
@@ -159,6 +160,7 @@ class App(tk.Frame):
             inputGender.grid(row=4,column=1)
             addBtn = tk.Button(body,text="Close",command=window.destroy)
             addBtn.grid(columnspan=2)
+            self.make_dynamic(window)
         except: pass
             
     #Create a window with the contact edit form
@@ -220,6 +222,7 @@ class App(tk.Frame):
             inputGender.grid(row=4,column=1)
             addBtn = tk.Button(body,text="OK",command=lambda: [self.editContact(window,selected_index,inputName.get(),inputPhone.get(),inputEmail.get(),inputAddress.get(),gender_value.get())])
             addBtn.grid(columnspan=2)
+            self.make_dynamic(window)
         except: pass
 
     #Execute the operations for editing a contact
@@ -292,6 +295,7 @@ class App(tk.Frame):
         inputDBname.insert(0,database_details[3])
         addBtn = tk.Button(body,text="OK",command=lambda: [self.connectDB(window,inputDBhost.get(),inputDBuser.get(),inputDBpassword.get(),inputDBname.get())])
         addBtn.grid(columnspan=2)
+        self.make_dynamic(window)
 
     #Update the contact list counter
     def contactCounter(self):
@@ -327,7 +331,22 @@ class App(tk.Frame):
         database_details = self.filehandling.loadDatabaseConfig()
         if database_details[0] == '': delDBBtn.config(state="disabled")
         saveBtn = tk.Button(window, text="Save", command=lambda: self.filehandling.saveGlobalConfig(window,autoConnect.get(),keepLogs.get()))
-        saveBtn.grid(row=3,column=0,columnspan=2)
+        saveBtn.grid(row=3,column=0,columnspan=2,pady=5,padx=5)
+        self.make_dynamic(window)
+
+    #Make a window's widgets dynamic when resizing
+    def make_dynamic(self,window):
+        col_count,row_count = window.grid_size()
+        
+        for i in range(row_count):
+            window.grid_rowconfigure(i, weight=1)
+
+        for i in range(col_count):
+            window.grid_columnconfigure(i, weight=1)
+
+        for child in window.children.values():
+            child.grid_configure(sticky="nsew")
+            self.make_dynamic(child)
 
     """ *---------------------------------------------------------------*
         |         Functions for config and logs file handling           |
