@@ -26,6 +26,50 @@ class App(tk.Frame):
     def __init__(self,master=None):
         tk.Frame.__init__(self,master)
         self.master.config(width=300,height=300)
+        #Main window UI widgets
+        self.menubar = tk.Menu(self)
+        self.menubar = tk.Menu(self)
+        self.contactsMenu = tk.Menu(self.menubar, tearoff=0)
+        self.contactsMenu.add_command(label="Import contacts",command=self.importContactsJSON,font=self.fontMedium)
+        self.contactsMenu.add_command(label="Export contacts",command=self.exportContactsJSON,font=self.fontMedium)
+        self.databaseMenu = tk.Menu(self.menubar, tearoff=0)
+        self.databaseMenu.add_command(label="Connect",command=self.connectDBWindow,font=self.fontMedium)
+        self.databaseMenu.add_command(label="Disconnect",command=self.disconnectDB,state="disabled",font=self.fontMedium)
+        self.menubar.add_cascade(label="Contacts", menu=self.contactsMenu,font=self.fontLarge)
+        self.menubar.add_cascade(label="Database", menu=self.databaseMenu,font=self.fontLarge)
+        self.menubar.add_command(label="Settings",command=self.settingsWindow,font=self.fontLarge)
+        self.menubar.add_command(label="Exit", command=self.quit,font=self.fontLarge)
+        self.master.config(menu=self.menubar)
+        self.master.title("Contact Manager")
+        self.master.resizable(True, True)
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        self.optionsFrame = tk.Frame(self.master,bg="#2b7287")
+        self.optionsFrame.grid(row=0,column=0,sticky="nsew")
+        self.viewBtn = tk.Button(self.optionsFrame,text="View",bg="teal",fg="white",highlightthickness=0,command=self.viewContact,font=self.fontLarge)
+        self.viewBtn.grid(row=0,column=0,pady=20,padx=20)
+        self.addBtn = tk.Button(self.optionsFrame,text="Add",bg="teal",fg="white",highlightthickness=0,command=self.addContactWindow,font=self.fontLarge)
+        self.addBtn.grid(row=1,column=0,pady=20,padx=20)
+        self.editBtn = tk.Button(self.optionsFrame,text="Edit",bg="teal",fg="white",highlightthickness=0,command=self.editContactWindow,font=self.fontLarge)
+        self.editBtn.grid(row=2,column=0,pady=20,padx=20)
+        self.removeBtn = tk.Button(self.optionsFrame,text="Remove",bg="teal",fg="white",highlightthickness=0,command=self.removeContact,font=self.fontLarge)
+        self.removeBtn.grid(row=3,column=0,pady=20,padx=20)
+        self.make_dynamic(self.optionsFrame)
+        self.contactsFrame = tk.Frame(self.master,bg="#b0b0b0")
+        self.contactsFrame.grid(sticky="nsew",row=0,column=1)
+        self.contactList = tk.Listbox(self.contactsFrame,width=50,font=self.fontMedium)
+        self.contactList.grid(row=0,column=0,pady=15,padx=15)
+        self.scrollbar_y = tk.Scrollbar(self.contactsFrame)
+        self.scrollbar_y.grid(row=0,column=1,sticky="ns")
+        self.contactList.config(yscrollcommand=self.scrollbar_y.set)
+        self.scrollbar_y.config(command = self.contactList.yview)
+        self.make_dynamic(self.contactsFrame)
+        self.statusFrame = tk.Frame(self.master)
+        self.statusFrame.grid(sticky="ew",row=1,column=0,columnspan=2)
+        self.counterLabel = tk.Label(self.statusFrame,text="Total contacts: 0",bg="#2b7287",font=self.fontMedium)
+        self.counterLabel.pack(fill="x")
+        self.statusLabel = tk.Label(self.statusFrame,text="Database Disconnected",fg="black",bg="#2b7287",font=self.fontMedium)
+        self.statusLabel.pack(fill="x")
 
     #Select and import a JSON file
     def importContactsJSON(self):
@@ -40,10 +84,10 @@ class App(tk.Frame):
                 #If database connection is set
                 if self.databaseStatus == True:
                     self.db.insertContact(contact["name"],contact["phone_number"],contact["email"],contact["address"],contact["gender"])
-                    contactList.insert(tk.END,contact["name"])
+                    self.contactList.insert(tk.END,contact["name"])
                 #Import to local data
                 else:
-                    contactList.insert(tk.END,contact["name"])
+                    self.contactList.insert(tk.END,contact["name"])
                     self.contactsDataJSON.append(contact)
             if self.filehandling.logger != '': self.filehandling.logger.info(f'Imported contacts list from ({filename})')
         except: pass
@@ -104,18 +148,18 @@ class App(tk.Frame):
             #If database connection is set
             if self.databaseStatus == True:
                 self.db.insertContact(name,phone,email,address,gender)
-                contactList.insert(tk.END,name)
+                self.contactList.insert(tk.END,name)
             else:
                 #Add a local data entry
                 self.contactsDataJSON.append({"name": name, "phone_number": phone, "email": email, "address": address, "gender": gender})
-                contactList.insert(tk.END,name)
+                self.contactList.insert(tk.END,name)
             window.destroy()
         else: msg.showwarning(title="Missing field",message="Please enter at least the contact name")
 
     #Create a window with the contact details
     def viewContact(self):
         try:
-            selected = contactList.get(contactList.curselection())
+            selected = self.contactList.get(self.contactList.curselection())
             #If database connection is set
             if self.databaseStatus == True:
                 contact = self.db.getContactByName(selected)
@@ -167,8 +211,8 @@ class App(tk.Frame):
     #Create a window with the contact edit form
     def editContactWindow(self):
         try:
-            selected = contactList.get(contactList.curselection())
-            selected_index = contactList.curselection()
+            selected = self.contactList.get(self.contactList.curselection())
+            selected_index = self.contactList.curselection()
             #If database connection is set
             if self.databaseStatus == True:
                 contact = self.db.getContactByName(selected)
@@ -229,12 +273,12 @@ class App(tk.Frame):
     #Execute the operations for editing a contact
     def editContact(self,window,selected_index,name,phone,email,address,gender):
         try:
-            old_name = contactList.get(selected_index)
+            old_name = self.contactList.get(selected_index)
             if self.databaseStatus == True:
                 self.db.editContact(old_name,name,phone,email,address,gender)
                 #Update the listbox entry with the new name
-                contactList.delete(selected_index,selected_index)
-                contactList.insert(selected_index,name)
+                self.contactList.delete(selected_index,selected_index)
+                self.contactList.insert(selected_index,name)
             else:
                 for contact in self.contactsDataJSON:
                     if contact["name"] == old_name:
@@ -250,20 +294,20 @@ class App(tk.Frame):
     #Execute the operations for removing a contact
     def removeContact(self):
         try: 
-            selected_index = contactList.curselection()
-            selected = contactList.get(contactList.curselection())
+            selected_index = self.contactList.curselection()
+            selected = self.contactList.get(self.contactList.curselection())
             confirm = msg.askyesno(title="Remove contact",message="Do you want to remove this contact? ("+selected+")")
             if confirm == True:
                 #If database connection is set
                 if self.databaseStatus == True:
                     self.db.removeContact(selected)
-                    contactList.delete(selected_index,selected_index)
+                    self.contactList.delete(selected_index,selected_index)
                 else:
                     #Delete the local list entry
                     for contact in self.contactsDataJSON:
                         if contact["name"] == selected:
                             self.contactsDataJSON.pop(self.contactsDataJSON.index(contact))
-                    contactList.delete(selected_index,selected_index)
+                    self.contactList.delete(selected_index,selected_index)
         except: pass
 
     #Create a Window for inputing the database details
@@ -300,8 +344,8 @@ class App(tk.Frame):
 
     #Update the contact list counter
     def contactCounter(self):
-        n_contacts = contactList.size()
-        contactCounter.config(text=f"Total contacts: {n_contacts}")
+        n_contacts = self.contactList.size()
+        self.counterLabel.config(text=f"Total contacts: {n_contacts}")
         self.after(1000,self.contactCounter)
 
     #Create a window for changing the application settings
@@ -398,8 +442,8 @@ class App(tk.Frame):
             msg.showinfo(title="Connected",message="Connected to database")
             window.destroy()
             self.importContactsDB()
-            databaseMenu.entryconfig("Connect",state="disabled")
-            databaseMenu.entryconfig("Disconnect",state="normal")
+            self.databaseMenu.entryconfig("Connect",state="disabled")
+            self.databaseMenu.entryconfig("Disconnect",state="normal")
         except: msg.showerror(title="Connection failed",message="There was an error connecting to the database")
 
     def disconnectDB(self):
@@ -407,70 +451,27 @@ class App(tk.Frame):
             self.db.cursor.close()
             self.db.conn.close()
             self.databaseStatus = False
-            contactList.delete(0,tk.END)
+            self.contactList.delete(0,tk.END)
             self.setDatabaseStatus()
-            databaseMenu.entryconfig("Connect",state="normal")
-            databaseMenu.entryconfig("Disconnect",state="disabled")
+            self.databaseMenu.entryconfig("Connect",state="normal")
+            self.databaseMenu.entryconfig("Disconnect",state="disabled")
         except: msg.showerror(title="Disconnection failed",message="There was an error disconnecting the database")
 
     #Set the displayed stats of the database connection
     def setDatabaseStatus(self):
         if self.databaseStatus == True:
-            statusLabel.config(text="Database Connected",fg="white")
-        else: statusLabel.config(text="Database Disconnected",fg="black")
+            self.statusLabel.config(text="Database Connected",fg="white")
+        else: self.statusLabel.config(text="Database Disconnected",fg="black")
 
     def importContactsDB(self):
         dbContacts = self.db.getContacts()
-        contactList.delete(0,tk.END)
+        self.contactList.delete(0,tk.END)
         for contact in dbContacts:
-            contactList.insert(tk.END,contact["name"])
+            self.contactList.insert(tk.END,contact["name"])
 
 #---------------------------- Run application ----------------------------
-app = App()
-menubar = tk.Menu(app)
-menubar = tk.Menu(app)
-contactsMenu = tk.Menu(menubar, tearoff=0)
-contactsMenu.add_command(label="Import contacts",command=app.importContactsJSON,font=app.fontMedium)
-contactsMenu.add_command(label="Export contacts",command=app.exportContactsJSON,font=app.fontMedium)
-databaseMenu = tk.Menu(menubar, tearoff=0)
-databaseMenu.add_command(label="Connect",command=app.connectDBWindow,font=app.fontMedium)
-databaseMenu.add_command(label="Disconnect",command=app.disconnectDB,state="disabled",font=app.fontMedium)
-menubar.add_cascade(label="Contacts", menu=contactsMenu,font=app.fontLarge)
-menubar.add_cascade(label="Database", menu=databaseMenu,font=app.fontLarge)
-menubar.add_command(label="Settings",command=app.settingsWindow,font=app.fontLarge)
-menubar.add_command(label="Exit", command=app.quit,font=app.fontLarge)
-
-app.master.config(menu=menubar)
-app.master.title("Contact Manager")
-app.master.resizable(True, True)
-app.master.grid_rowconfigure(0, weight=1)
-app.master.grid_columnconfigure(0, weight=1)
-optionsFrame = tk.Frame(app.master,bg="#2b7287")
-optionsFrame.grid(row=0,column=0,sticky="nsew")
-viewBtn = tk.Button(optionsFrame,text="View",bg="teal",fg="white",highlightthickness=0,command=app.viewContact,font=app.fontLarge)
-viewBtn.grid(row=0,column=0,pady=20,padx=20)
-addBtn = tk.Button(optionsFrame,text="Add",bg="teal",fg="white",highlightthickness=0,command=app.addContactWindow,font=app.fontLarge)
-addBtn.grid(row=1,column=0,pady=20,padx=20)
-editBtn = tk.Button(optionsFrame,text="Edit",bg="teal",fg="white",highlightthickness=0,command=app.editContactWindow,font=app.fontLarge)
-editBtn.grid(row=2,column=0,pady=20,padx=20)
-removeBtn = tk.Button(optionsFrame,text="Remove",bg="teal",fg="white",highlightthickness=0,command=app.removeContact,font=app.fontLarge)
-removeBtn.grid(row=3,column=0,pady=20,padx=20)
-app.make_dynamic(optionsFrame)
-contactsFrame = tk.Frame(app.master,bg="#b0b0b0")
-contactsFrame.grid(sticky="nsew",row=0,column=1)
-contactList = tk.Listbox(contactsFrame,width=50,font=app.fontMedium)
-contactList.grid(row=0,column=0,pady=15,padx=15)
-scrollbar_y = tk.Scrollbar(contactsFrame)
-scrollbar_y.grid(row=0,column=1,sticky="ns")
-contactList.config(yscrollcommand=scrollbar_y.set)
-scrollbar_y.config(command = contactList.yview)
-app.make_dynamic(contactsFrame)
-statusFrame = tk.Frame(app.master)
-statusFrame.grid(sticky="ew",row=1,column=0,columnspan=2)
-contactCounter = tk.Label(statusFrame,text="Total contacts: 0",bg="#2b7287",font=app.fontMedium)
-contactCounter.pack(fill="x")
-statusLabel = tk.Label(statusFrame,text="Database Disconnected",fg="black",bg="#2b7287",font=app.fontMedium)
-statusLabel.pack(fill="x")
-app.contactCounter()
-app.initializeFiles() #Check for the existance of a config file
-app.mainloop()
+if __name__ == '__main__':
+    app = App()
+    app.contactCounter()
+    app.initializeFiles() #Check for the existance of a config file
+    app.mainloop()
