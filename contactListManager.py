@@ -114,7 +114,7 @@ class App(tk.Frame):
     def addContactWindow(self):
         window = tk.Toplevel(self)
         window.title("Add a contact")
-        window.geometry(f'+{self.master.winfo_rootx()}+{self.winfo_rooty()}')
+        window.geometry(f'+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}')
         body = tk.Frame(window)
         body.grid()
         name = tk.Label(body,text="Name:",font=self.fontMedium)
@@ -180,7 +180,7 @@ class App(tk.Frame):
             #Open view window
             window = tk.Toplevel(self)
             window.title("View contact")
-            window.geometry(f'+{self.master.winfo_rootx()}+{self.winfo_rooty()}')
+            window.geometry(f'+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}')
             body = tk.Frame(window)
             body.grid()
             name = tk.Label(body,text="Name:",font=self.fontMedium)
@@ -233,7 +233,7 @@ class App(tk.Frame):
             #Open edit window
             window = tk.Toplevel(self)
             window.title("Edit contact")
-            window.geometry(f'+{self.master.winfo_rootx()}+{self.winfo_rooty()}')
+            window.geometry(f'+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}')
             body = tk.Frame(window)
             body.grid()
             name = tk.Label(body,text="Name:",font=self.fontMedium)
@@ -315,7 +315,7 @@ class App(tk.Frame):
         database_details = self.filehandling.loadDatabaseConfig() #Load the server details from the configuration file
         window = tk.Toplevel(self)
         window.title("Database details")
-        window.geometry(f'+{self.master.winfo_rootx()}+{self.winfo_rooty()}')
+        window.geometry(f'+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}')
         body = tk.Frame(window,padx=20,pady=20)
         body.grid()
         DBhost = tk.Label(body,text="Host:",font=self.fontMedium)
@@ -358,7 +358,7 @@ class App(tk.Frame):
         
         window = tk.Toplevel(self)
         window.title("Settings")
-        window.geometry(f'+{self.master.winfo_rootx()}+{self.winfo_rooty()}')
+        window.geometry(f'+{self.master.winfo_rootx()}+{self.master.winfo_rooty()}')
         body = tk.Frame(window, padx=20,pady=20)
         body.grid()
         label1 = tk.Label(window,text="Auto connect on open:",pady=15,padx=15,font=self.fontMedium)
