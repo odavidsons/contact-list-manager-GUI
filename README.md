@@ -21,6 +21,7 @@ The application works both for local and database storage:
 - [X] Auto connect to database on open
 - [X] Reset saved connection details
 - [X] Keep log file
+- [X] Responsive GUI
 
 **Planned features**
 - [ ] Variant with user authentication
