@@ -57,7 +57,7 @@ class App(tk.Frame):
         self.make_dynamic(self.optionsFrame)
         self.contactsFrame = tk.Frame(self.master,bg="#b0b0b0")
         self.contactsFrame.grid(sticky="nsew",row=0,column=1)
-        self.contactList = tk.Listbox(self.contactsFrame,width=50,font=self.fontMedium)
+        self.contactList = tk.Listbox(self.contactsFrame,width=50,justify="center",font=self.fontMedium)
         self.contactList.grid(row=0,column=0,pady=15,padx=15)
         self.scrollbar_y = tk.Scrollbar(self.contactsFrame)
         self.scrollbar_y.grid(row=0,column=1,sticky="ns")
