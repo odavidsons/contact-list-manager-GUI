@@ -11,7 +11,53 @@ class views():
 
     def __init__(self,app):
         self.app = app
-        
+    
+    #Create the main interface of the app
+    def mainAppWindow(self):
+        self.app.menubar = tk.Menu(self.app)
+        self.app.menubar = tk.Menu(self.app)
+        self.app.contactsMenu = tk.Menu(self.app.menubar, tearoff=0)
+        self.app.contactsMenu.add_command(label="Import contacts",command=self.app.importContactsJSON,font=self.app.fontMedium)
+        self.app.contactsMenu.add_command(label="Export contacts",command=self.app.exportContactsJSON,font=self.app.fontMedium)
+        self.app.databaseMenu = tk.Menu(self.app.menubar, tearoff=0)
+        self.app.databaseMenu.add_command(label="Connect",command=self.app.views.connectDBWindow,font=self.app.fontMedium)
+        self.app.databaseMenu.add_command(label="Disconnect",command=self.app.disconnectDB,state="disabled",font=self.app.fontMedium)
+        self.app.menubar.add_cascade(label="Contacts", menu=self.app.contactsMenu,font=self.app.fontLarge)
+        self.app.menubar.add_cascade(label="Database", menu=self.app.databaseMenu,font=self.app.fontLarge)
+        self.app.menubar.add_command(label="Settings",command=self.app.views.settingsWindow,font=self.app.fontLarge)
+        self.app.menubar.add_command(label="Exit", command=self.app.quit,font=self.app.fontLarge)
+        self.app.master.config(menu=self.app.menubar)
+        self.app.master.title("Contact Manager")
+        self.app.master.resizable(True, True)
+        self.app.master.grid_rowconfigure(0, weight=1)
+        self.app.master.grid_columnconfigure(0, weight=1)
+        self.app.optionsFrame = tk.Frame(self.app.master,bg="#2b7287")
+        self.app.optionsFrame.grid(row=0,column=0,sticky="nsew")
+        self.app.viewBtn = tk.Button(self.app.optionsFrame,text="View",bg="teal",fg="white",highlightthickness=0,command=self.viewContact,font=self.app.fontLarge)
+        self.app.viewBtn.grid(row=0,column=0,pady=20,padx=20)
+        self.app.addBtn = tk.Button(self.app.optionsFrame,text="Add",bg="teal",fg="white",highlightthickness=0,command=self.addContactWindow,font=self.app.fontLarge)
+        self.app.addBtn.grid(row=1,column=0,pady=20,padx=20)
+        self.app.editBtn = tk.Button(self.app.optionsFrame,text="Edit",bg="teal",fg="white",highlightthickness=0,command=self.editContactWindow,font=self.app.fontLarge)
+        self.app.editBtn.grid(row=2,column=0,pady=20,padx=20)
+        self.app.removeBtn = tk.Button(self.app.optionsFrame,text="Remove",bg="teal",fg="white",highlightthickness=0,command=self.app.removeContact,font=self.app.fontLarge)
+        self.app.removeBtn.grid(row=3,column=0,pady=20,padx=20)
+        self.app.views.make_dynamic(self.app.optionsFrame)
+        self.app.contactsFrame = tk.Frame(self.app.master,bg="#b0b0b0")
+        self.app.contactsFrame.grid(sticky="nsew",row=0,column=1)
+        self.app.contactList = tk.Listbox(self.app.contactsFrame,width=50,justify="center",font=self.app.fontMedium)
+        self.app.contactList.grid(row=0,column=0,pady=15,padx=15)
+        self.app.scrollbar_y = tk.Scrollbar(self.app.contactsFrame)
+        self.app.scrollbar_y.grid(row=0,column=1,sticky="ns")
+        self.app.contactList.config(yscrollcommand=self.app.scrollbar_y.set)
+        self.app.scrollbar_y.config(command = self.app.contactList.yview)
+        self.app.views.make_dynamic(self.app.contactsFrame)
+        self.app.statusFrame = tk.Frame(self.app.master)
+        self.app.statusFrame.grid(sticky="ew",row=1,column=0,columnspan=2)
+        self.app.counterLabel = tk.Label(self.app.statusFrame,text="Total contacts: 0",bg="#2b7287",font=self.app.fontMedium)
+        self.app.counterLabel.pack(fill="x")
+        self.app.statusLabel = tk.Label(self.app.statusFrame,text="Database Disconnected",fg="black",bg="#2b7287",font=self.app.fontMedium)
+        self.app.statusLabel.pack(fill="x")
+
     #Create a window with a contact form
     def addContactWindow(self):
         window = tk.Toplevel(self.app)

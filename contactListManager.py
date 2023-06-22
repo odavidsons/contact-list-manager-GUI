@@ -28,50 +28,7 @@ class App(tk.Frame):
         tk.Frame.__init__(self,master)
         self.master.config(width=300,height=300)
         self.views = views.views(self)
-        #Main window UI widgets
-        self.menubar = tk.Menu(self)
-        self.menubar = tk.Menu(self)
-        self.contactsMenu = tk.Menu(self.menubar, tearoff=0)
-        self.contactsMenu.add_command(label="Import contacts",command=self.importContactsJSON,font=self.fontMedium)
-        self.contactsMenu.add_command(label="Export contacts",command=self.exportContactsJSON,font=self.fontMedium)
-        self.databaseMenu = tk.Menu(self.menubar, tearoff=0)
-        self.databaseMenu.add_command(label="Connect",command=self.views.connectDBWindow,font=self.fontMedium)
-        self.databaseMenu.add_command(label="Disconnect",command=self.disconnectDB,state="disabled",font=self.fontMedium)
-        self.menubar.add_cascade(label="Contacts", menu=self.contactsMenu,font=self.fontLarge)
-        self.menubar.add_cascade(label="Database", menu=self.databaseMenu,font=self.fontLarge)
-        self.menubar.add_command(label="Settings",command=self.views.settingsWindow,font=self.fontLarge)
-        self.menubar.add_command(label="Exit", command=self.quit,font=self.fontLarge)
-        self.master.config(menu=self.menubar)
-        self.master.title("Contact Manager")
-        self.master.resizable(True, True)
-        self.master.grid_rowconfigure(0, weight=1)
-        self.master.grid_columnconfigure(0, weight=1)
-        self.optionsFrame = tk.Frame(self.master,bg="#2b7287")
-        self.optionsFrame.grid(row=0,column=0,sticky="nsew")
-        self.viewBtn = tk.Button(self.optionsFrame,text="View",bg="teal",fg="white",highlightthickness=0,command=self.views.viewContact,font=self.fontLarge)
-        self.viewBtn.grid(row=0,column=0,pady=20,padx=20)
-        self.addBtn = tk.Button(self.optionsFrame,text="Add",bg="teal",fg="white",highlightthickness=0,command=self.views.addContactWindow,font=self.fontLarge)
-        self.addBtn.grid(row=1,column=0,pady=20,padx=20)
-        self.editBtn = tk.Button(self.optionsFrame,text="Edit",bg="teal",fg="white",highlightthickness=0,command=self.views.editContactWindow,font=self.fontLarge)
-        self.editBtn.grid(row=2,column=0,pady=20,padx=20)
-        self.removeBtn = tk.Button(self.optionsFrame,text="Remove",bg="teal",fg="white",highlightthickness=0,command=self.removeContact,font=self.fontLarge)
-        self.removeBtn.grid(row=3,column=0,pady=20,padx=20)
-        self.views.make_dynamic(self.optionsFrame)
-        self.contactsFrame = tk.Frame(self.master,bg="#b0b0b0")
-        self.contactsFrame.grid(sticky="nsew",row=0,column=1)
-        self.contactList = tk.Listbox(self.contactsFrame,width=50,justify="center",font=self.fontMedium)
-        self.contactList.grid(row=0,column=0,pady=15,padx=15)
-        self.scrollbar_y = tk.Scrollbar(self.contactsFrame)
-        self.scrollbar_y.grid(row=0,column=1,sticky="ns")
-        self.contactList.config(yscrollcommand=self.scrollbar_y.set)
-        self.scrollbar_y.config(command = self.contactList.yview)
-        self.views.make_dynamic(self.contactsFrame)
-        self.statusFrame = tk.Frame(self.master)
-        self.statusFrame.grid(sticky="ew",row=1,column=0,columnspan=2)
-        self.counterLabel = tk.Label(self.statusFrame,text="Total contacts: 0",bg="#2b7287",font=self.fontMedium)
-        self.counterLabel.pack(fill="x")
-        self.statusLabel = tk.Label(self.statusFrame,text="Database Disconnected",fg="black",bg="#2b7287",font=self.fontMedium)
-        self.statusLabel.pack(fill="x")
+        self.views.mainAppWindow()
 
     #Select and import a JSON file
     def importContactsJSON(self):
@@ -202,7 +159,6 @@ class App(tk.Frame):
                 #If auto_connect was on, pass the newly created logger object
                 if self.db:
                     self.db.logger = self.filehandling.logger
-                    print(self.db.logger)
 
     """ *---------------------------------------------------------------*
         |                Functions for database handling                |
