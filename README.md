@@ -30,7 +30,7 @@ The application works both for local and database storage:
 
 **Provided in the releases is a single file executable that you can use to run the application easily. The only thing that needs setup is the database, this beeing if you plan on using it**
 
-The currently supported database structure dump is provided in the repository (database.sql). Keep in mind this is using MySQL.
+The currently supported database structure dump is provided in the repository (SQL/database.sql). Keep in mind this is using MySQL.
 
 **#1** Create a database called 'contactslist'
 ```

@@ -1,2 +1,6 @@
 __pycache__
 build
+dist/config.ini
+dist/contactslog.log
+contactListManager.spec
+contactslog.log
