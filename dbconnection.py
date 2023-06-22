@@ -3,7 +3,6 @@ Class file containing all of the database operation functions. Imported by the m
 
 Made by David Santos - https://github.com/odavidsons/contact-list-manager-GUI
 """
-import filehandling #Import file handling functions for logging
 import mysql.connector
 
 class dbconnection():
